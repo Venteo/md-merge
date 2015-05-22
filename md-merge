@@ -52,13 +52,17 @@ function mergeFiles($inputFileLocation, $outputFileLocation) {
 			}
 			$includeFileLocation = substr($inputFileData, $startLocation, $endLocation - $startLocation);
 
+			//Calculate the relative file location
+			$inputFileDirectory = str_replace(basename($inputFileLocation), "", realpath($inputFileLocation));
+			$includeFileLocation =  $inputFileDirectory . $includeFileLocation;
+
 			//Check that the included file exists
 			if (!file_exists($includeFileLocation)) {
 				die($includeFileLocation . " file does not exist\n");
 			}
 
 			//Open the included file
-			$includeFile = fopen(str_replace(realpath($inputFileLocation), $inputFileLocation, "").$includeFileLocation, "r") or die("Unable to open input file!\n");
+			$includeFile = fopen($includeFileLocation, "r") or die("Unable to open input file!\n");
 			$includeFileData = fread($includeFile, filesize($includeFileLocation));
 			fclose($includeFile);
 
