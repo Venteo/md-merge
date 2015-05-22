@@ -1,0 +1,80 @@
+#!/usr/bin/env php
+<?php namespace MdMerge;
+
+/*
+ * Get the input arguments
+ */
+if (isset($argv) && count($argv) <= 1) {
+	die ("You must enter an input and output file");
+}
+
+$inputFileLocation = $argv[1];
+$outputFileLocation = $argv[2];
+mergeFiles($inputFileLocation, $outputFileLocation);
+
+/**
+ * Merges multiple markdown files
+ * @param $inputFileLocation
+ * @param $outputFileLocation
+ */
+function mergeFiles($inputFileLocation, $outputFileLocation) {
+	//Check that the input file exists
+	if (!file_exists($inputFileLocation)) {
+		die("The input file does not exist\n");
+	}
+
+	//Open the input file and store its contents in a variable
+	$inputFile = fopen($inputFileLocation, "r") or die("Unable to open input file!\n");
+	$inputFileData = fread($inputFile, filesize($inputFileLocation));
+	fclose($inputFile);
+
+	//Find all the merge tokens
+	$inputFileLength = strlen( $inputFileData );
+	for( $i = 0; $i <= $inputFileLength; $i++ ) {
+		$token = substr($inputFileData, $i, 3);
+
+		//If the merge token is present
+		if ($token == '<<[') {
+
+			//Get the markdown link
+			$currentCharacter = '';
+			$startLocation = $i + 3;
+			$endLocation = $startLocation;
+			//Find end of link
+			while ($currentCharacter != ']') {
+				$endLocation++;
+				$currentCharacter = substr($inputFileData, $endLocation, 1);
+
+				//Prevent an infinite loop
+				if ($endLocation > $inputFileLength) {
+					die("Syntax Error\n");
+				}
+			}
+			$includeFileLocation = substr($inputFileData, $startLocation, $endLocation - $startLocation);
+
+			//Check that the included file exists
+			if (!file_exists($includeFileLocation)) {
+				die($includeFileLocation . " file does not exist\n");
+			}
+
+			//Open the included file
+			$includeFile = fopen($includeFileLocation, "r") or die("Unable to open input file!\n");
+			$includeFileData = fread($includeFile, filesize($includeFileLocation));
+			fclose($includeFile);
+
+			//Add the included file
+			$beforeIncludeData = substr($inputFileData, 0, ($startLocation - 3));
+			$afterIncludeData = substr($inputFileData, $endLocation + 1, $inputFileLength);
+
+			$inputFileData = $beforeIncludeData . $includeFileData . $afterIncludeData;
+
+			//Recalculate the fle length
+			$inputFileLength = strlen($inputFileData);
+		}
+	}
+
+	//Save the final file
+	$outputFile = fopen($outputFileLocation, "w");
+	fwrite($outputFile, $inputFileData);
+	fclose($outputFile);
+}
