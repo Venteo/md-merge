@@ -58,7 +58,7 @@ function mergeFiles($inputFileLocation, $outputFileLocation) {
 			}
 
 			//Open the included file
-			$includeFile = fopen($includeFileLocation, "r") or die("Unable to open input file!\n");
+			$includeFile = fopen(str_replace(realpath($inputFileLocation), $inputFileLocation, "").$includeFileLocation, "r") or die("Unable to open input file!\n");
 			$includeFileData = fread($includeFile, filesize($includeFileLocation));
 			fclose($includeFile);
 

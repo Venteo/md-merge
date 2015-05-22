@@ -6,7 +6,7 @@ To run the script enter the following command:
 php md-merge input.md output.md
 ```
 <br>
-To include other text files in markdown write the file location:
+To include other text files in markdown write their relative location to the input file:
 ```
 <<[introduction.md]
 ```
