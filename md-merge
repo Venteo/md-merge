@@ -67,13 +67,31 @@ function mergeFiles($inputFileLocation, $outputFileLocation) {
 			$includeFile = fopen($includeFileLocation, "r") or die("Unable to open input file!\n");
 			$includeFileData = fread($includeFile, filesize($includeFileLocation));
 
-			//If the file is json
-			if (pathinfo($includeFileLocation, PATHINFO_EXTENSION) == 'json') {
+			$tabStartLocation = $startLocation - 5;
+			substr($inputFileData, $tabStartLocation, 1);
+			$numTabs = 0;
+			$numSpaces = 0;
+			while (substr($inputFileData, $tabStartLocation, 1) == " ") {
+				$numSpaces++;
+				if ($numSpaces == 3) {
+					$numTabs++;
+					$numSpaces = 0;
+				}
+				$tabStartLocation--;
+			}
+
+			//Create the tabs
+			if ($numTabs > 0) {
+				$tabs = '';
+				for ($i = 0; $i < $numTabs; $i++) {
+					$tabs = $tabs . "\t";
+				}
+
 				$includeFileDataWithTabs = '';
 				//Loop through each line
 				foreach(preg_split("/((\r?\n)|(\r\n?))/", $includeFileData) as $line){
 					//Add tabs
-					$includeFileDataWithTabs = $includeFileDataWithTabs . "\t\t" . $line . "\n";
+					$includeFileDataWithTabs = $includeFileDataWithTabs . $tabs . $line . "\n";
 				}
 				$includeFileData = $includeFileDataWithTabs;
 			}
@@ -81,7 +99,7 @@ function mergeFiles($inputFileLocation, $outputFileLocation) {
 			fclose($includeFile);
 
 			//Add the included file
-			$beforeIncludeData = substr($inputFileData, 0, ($startLocation - 3));
+			$beforeIncludeData = substr($inputFileData, 0, ($startLocation - 3) - ($numTabs * 4));
 			$afterIncludeData = substr($inputFileData, $endLocation + 1, $inputFileLength);
 
 			$inputFileData = $beforeIncludeData . $includeFileData . $afterIncludeData;
