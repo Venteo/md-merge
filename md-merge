@@ -4,6 +4,8 @@
 /*
  * Get the input arguments
  */
+use Symfony\Component\Finder\SplFileInfo;
+
 if (isset($argv) && count($argv) <= 1) {
 	die ("You must enter an input and output file");
 }
@@ -64,6 +66,18 @@ function mergeFiles($inputFileLocation, $outputFileLocation) {
 			//Open the included file
 			$includeFile = fopen($includeFileLocation, "r") or die("Unable to open input file!\n");
 			$includeFileData = fread($includeFile, filesize($includeFileLocation));
+
+			//If the file is json
+			if (pathinfo($includeFileLocation, PATHINFO_EXTENSION) == 'json') {
+				$includeFileDataWithTabs = '';
+				//Loop through each line
+				foreach(preg_split("/((\r?\n)|(\r\n?))/", $includeFileData) as $line){
+					//Add tabs
+					$includeFileDataWithTabs = $includeFileDataWithTabs . "\t\t" . $line . "\n";
+				}
+				$includeFileData = $includeFileDataWithTabs;
+			}
+
 			fclose($includeFile);
 
 			//Add the included file
@@ -72,7 +86,7 @@ function mergeFiles($inputFileLocation, $outputFileLocation) {
 
 			$inputFileData = $beforeIncludeData . $includeFileData . $afterIncludeData;
 
-			//Recalculate the fle length
+			//Recalculate the file length
 			$inputFileLength = strlen($inputFileData);
 		}
 	}
