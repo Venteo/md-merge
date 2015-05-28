@@ -65,7 +65,11 @@ function mergeFiles($inputFileLocation, $outputFileLocation) {
 
 			//Open the included file
 			$includeFile = fopen($includeFileLocation, "r") or die("Unable to open input file!\n");
-			$includeFileData = fread($includeFile, filesize($includeFileLocation));
+			if (filesize($includeFileLocation)) {
+				$includeFileData = fread($includeFile, filesize($includeFileLocation));
+			} else {
+				die($includeFileLocation . " file is empty\n");
+			}
 
 			$tabStartLocation = $startLocation - 5;
 			substr($inputFileData, $tabStartLocation, 1);
